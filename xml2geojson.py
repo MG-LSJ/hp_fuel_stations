@@ -4,6 +4,7 @@ import xml.etree.ElementTree as ET
 import geojson
 
 features = []
+brokenFeatures = []
 
 # Marker tags
 #  <marker dealercode="41051909" outletname="MSHSD HIRALAL AGARWAL" lat="19.682900000000"
@@ -21,52 +22,61 @@ for i in range(1, 806):
     root = tree.getroot()
     for child in root:
         if child.tag == "marker":
-            features.append(
-                geojson.Feature(
-                    geometry=geojson.Point(
-                        (
-                            float(child.attrib["lng"]),
-                            float(child.attrib["lat"]),
-                        )
-                    ),
-                    properties={
-                        "name": child.attrib["outletname"] or None,
-                        "dealerCode": child.attrib["dealercode"] or None,
-                        "address": (
-                            child.attrib["ADD1"]
-                            + " "
-                            + child.attrib["ADD2"]
-                            + " "
-                            + child.attrib["ADD3"]
-                        )
-                        or None,
-                        "city": child.attrib["CITY"] or None,
-                        "stateCode": child.attrib["STATECD"] or None,
-                        "townCode": child.attrib["TOWNCD"] or None,
-                        "clubHP": child.attrib["CLUBHP"] or None,
-                        "ATM": child.attrib["ATM"] or None,
-                        "loanShop": child.attrib["LOANSHOP"] or None,
-                        "cStore": child.attrib["C_STORE"] or None,
-                        "restaurant": child.attrib["RESTAURANT"] or None,
-                        "bookShop": child.attrib["BOOKSHOP"] or None,
-                        "insurance": child.attrib["INSURANCE"] or None,
-                        "kvk": child.attrib["KVK"] or None,
-                        "dhaba": child.attrib["DHABA"] or None,
-                        "vsPUC": child.attrib["VS_PUC"] or None,
-                        "autoAccess": child.attrib["AUTO_ACCESS"] or None,
-                        "batteries": child.attrib["BATTERIES"] or None,
-                        "tyres": child.attrib["TYRES"] or None,
-                        "autoLPG": child.attrib["AUTOLPG"] or None,
-                        "cngOutlet": child.attrib["CNGOUTLET"] or None,
-                        "dtPlus": child.attrib["DTPLUS"] or None,
-                        "msRate": child.attrib["MSRATE"] or None,
-                        "hsdRate": child.attrib["HSDRATE"] or None,
-                        "addnlFacility": child.attrib["ADDNL_FACILIY"] or None,
-                        "iconName": child.attrib["ICON_NAME"] or None,
-                        "divData": child.attrib["div_data"] or None,
-                    },
-                )
+            feature: geojson.Feature = geojson.Feature(
+                geometry=geojson.Point(
+                    (
+                        float(child.attrib["lng"]),
+                        float(child.attrib["lat"]),
+                    )
+                ),
+                properties={
+                    "name": child.attrib["outletname"] or None,
+                    "dealerCode": child.attrib["dealercode"] or None,
+                    "address": (
+                        child.attrib["ADD1"]
+                        + " "
+                        + child.attrib["ADD2"]
+                        + " "
+                        + child.attrib["ADD3"]
+                    )
+                    or None,
+                    "city": child.attrib["CITY"] or None,
+                    "stateCode": child.attrib["STATECD"] or None,
+                    "townCode": child.attrib["TOWNCD"] or None,
+                    "clubHP": child.attrib["CLUBHP"] or None,
+                    "ATM": child.attrib["ATM"] or None,
+                    "loanShop": child.attrib["LOANSHOP"] or None,
+                    "cStore": child.attrib["C_STORE"] or None,
+                    "restaurant": child.attrib["RESTAURANT"] or None,
+                    "bookShop": child.attrib["BOOKSHOP"] or None,
+                    "insurance": child.attrib["INSURANCE"] or None,
+                    "kvk": child.attrib["KVK"] or None,
+                    "dhaba": child.attrib["DHABA"] or None,
+                    "vsPUC": child.attrib["VS_PUC"] or None,
+                    "autoAccess": child.attrib["AUTO_ACCESS"] or None,
+                    "batteries": child.attrib["BATTERIES"] or None,
+                    "tyres": child.attrib["TYRES"] or None,
+                    "autoLPG": child.attrib["AUTOLPG"] or None,
+                    "cngOutlet": child.attrib["CNGOUTLET"] or None,
+                    "dtPlus": child.attrib["DTPLUS"] or None,
+                    "msRate": child.attrib["MSRATE"] or None,
+                    "hsdRate": child.attrib["HSDRATE"] or None,
+                    "addnlFacility": child.attrib["ADDNL_FACILIY"] or None,
+                    "iconName": child.attrib["ICON_NAME"] or None,
+                },
             )
+
+            # check if coordinates are non 0 0
+            if (
+                feature.geometry.coordinates[0] != 0
+                and feature.geometry.coordinates[1] != 0
+            ):
+                features.append(feature)
+            else:
+                brokenFeatures.append(feature)
 
 with open("hp_fuel_full.geojson", "w") as file:
     geojson.dump(geojson.FeatureCollection(features), file)
+
+with open("hp_fuel_broken.geojson", "w") as file:
+    geojson.dump(geojson.FeatureCollection(brokenFeatures), file)
