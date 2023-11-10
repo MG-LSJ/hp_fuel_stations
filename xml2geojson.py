@@ -75,7 +75,7 @@ for i in range(1, 806):
             else:
                 brokenFeatures.append(feature)
 
-with open("hp_fuel_full.geojson", "w") as file:
+with open("hp_fuel_stations.geojson", "w") as file:
     geojson.dump(geojson.FeatureCollection(features), file)
 
 with open("hp_fuel_broken.geojson", "w") as file:
