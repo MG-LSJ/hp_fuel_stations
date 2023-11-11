@@ -4,6 +4,7 @@ import xml.etree.ElementTree as ET
 import geojson
 
 features = []
+featuresNameOnly = []
 brokenFeatures = []
 
 # Marker tags
@@ -72,11 +73,20 @@ for i in range(1, 806):
                 and feature.geometry.coordinates[1] != 0
             ):
                 features.append(feature)
+                featuresNameOnly.append(
+                    geojson.Feature(
+                        geometry=feature.geometry,
+                        properties={"name": feature.properties["name"]},
+                    )
+                )
             else:
                 brokenFeatures.append(feature)
+
+with open("hp_fuel_stations_name_only.geojson", "w") as file:
+    geojson.dump(geojson.FeatureCollection(featuresNameOnly), file)
 
 with open("hp_fuel_stations.geojson", "w") as file:
     geojson.dump(geojson.FeatureCollection(features), file)
 
-with open("hp_fuel_broken.geojson", "w") as file:
+with open("broken.geojson", "w") as file:
     geojson.dump(geojson.FeatureCollection(brokenFeatures), file)
